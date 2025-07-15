@@ -1,0 +1,67 @@
+Build a Python-based multi-agent browser automation system that interacts with https://www.ajio.com just like a human user. Use `playwright` for browser control (not requests or fake APIs). The system must:
+
+---
+
+1. **Login Automation Agent**:
+    - Launch Ajio website using `playwright` in headless or headful mode.
+    - Detect and intelligently dismiss popups using Playwright selectors (e.g., click close buttons or “later”).
+    - Click on the **Login** button at top right corner.
+    - Wait for login modal to appear.
+    - Ask user for their **phone number** via CLI (or later, Web UI).
+    - Enter phone number into Ajio’s login input box.
+    - Click **Send OTP** on the Ajio site.
+    - Pause and ask the user to **enter OTP** they received on their phone.
+    - Enter OTP into OTP box on Ajio page.
+    - Click **Verify/Login** and wait until login is successful.
+
+2. **Order Agent**:
+    - After login, navigate to **My Account → My Orders**.
+    - Loop through all orders using `crawl4ai` (or Playwright + BeautifulSoup).
+    - Scrape for each order:
+        - Product name
+        - Order ID
+        - Price
+        - Image URL
+        - Delivery status
+        - Return or Replace buttons
+        - Return Deadline date
+
+3. **Return/Replace Agent**:
+    - Based on user command ("return my red shoes"), click the return/replace button for a given order.
+    - Confirm the action using browser automation.
+
+4. **Reminder Agent**:
+    - Save scraped order info to SQLite DB.
+    - On each app run, check return deadlines.
+    - Show toast/print alerts if deadline is < 2 days.
+
+---
+
+✅ Use:
+- `playwright` for full browser automation (not requests or fake APIs)
+- `typer` for CLI-based interaction with user for phone/OTP
+- `crawl4ai` for scraping product/order info from order detail pages
+- `sqlite3` for saving session + orders
+- `Groq API` for parsing natural language commands to structured intent (optional)
+
+---
+
+💡 Key Constraints:
+- The agent should **act exactly as a user would** on Ajio.com.
+- **Do not simulate OTP sending** — let Ajio actually send OTP to user's mobile, and wait for user input to continue.
+- Handle popup modals, dynamic selectors, and JavaScript rendering.
+
+---
+
+💻 Final structure:
+- `main.py` → orchestrates login, OTP, order scraping
+- `agents/login_agent.py`
+- `agents/order_agent.py`
+- `agents/return_agent.py`
+- `utils/crawl4ai_helper.py`
+- `db/orders.db` → stores return deadlines
+- `tests/` → use `pytest` to mock login/order scraping
+
+---
+
+🎯 Make the app simple and modular, with clear functions and user prompts.
