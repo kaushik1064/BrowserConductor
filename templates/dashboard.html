@@ -264,6 +264,14 @@
                             </label>
                             <small style="color: #64748b;">Uncheck to see the browser window</small>
                         </div>
+                        
+                        <div style="margin-bottom: 15px; padding: 15px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="demo-mode" style="margin-right: 8px;">
+                                <span style="font-weight: bold; color: #0369a1;">Demo Mode (Recommended)</span>
+                            </label>
+                            <small style="color: #0369a1;">Run a simulation without real browser automation. Perfect for testing the interface and seeing sample orders.</small>
+                        </div>
                     </div>
                     
                     <div style="margin: 20px 0;">
@@ -431,13 +439,14 @@
             const phoneNumber = document.getElementById('phone').value.trim();
             const command = document.getElementById('command').value.trim();
             const headless = document.getElementById('headless').checked;
+            const demoMode = document.getElementById('demo-mode').checked;
             
             if (!phoneNumber) {
                 alert('Please enter your phone number');
                 return;
             }
             
-            if (!/^\d{10}$/.test(phoneNumber)) {
+            if (!demoMode && !/^\d{10}$/.test(phoneNumber)) {
                 alert('Please enter a valid 10-digit phone number');
                 return;
             }
@@ -451,7 +460,8 @@
                     body: JSON.stringify({
                         phone_number: phoneNumber,
                         command: command,
-                        headless: headless
+                        headless: headless,
+                        demo_mode: demoMode
                     })
                 });
                 

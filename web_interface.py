@@ -148,6 +148,7 @@ def start_automation():
         phone_number = data.get('phone_number')
         command = data.get('command', '')
         headless = data.get('headless', False)
+        demo_mode = data.get('demo_mode', False)
         
         if not phone_number:
             return jsonify({'error': 'Phone number is required'}), 400
@@ -160,11 +161,18 @@ def start_automation():
         automation_status['status'] = 'starting'
         automation_status['message'] = 'Initializing automation...'
         automation_status['error'] = None
+        automation_status['orders'] = []
         
-        thread = threading.Thread(
-            target=run_automation, 
-            args=(phone_number, command, headless)
-        )
+        if demo_mode:
+            thread = threading.Thread(
+                target=run_demo_automation, 
+                args=(phone_number, command)
+            )
+        else:
+            thread = threading.Thread(
+                target=run_automation, 
+                args=(phone_number, command, headless)
+            )
         thread.daemon = True
         thread.start()
         
@@ -223,7 +231,14 @@ def run_automation(phone_number, command, headless):
                 # Step 1: Start browser
                 automation_status['status'] = 'browser_starting'
                 automation_status['message'] = 'Opening browser...'
-                await login_agent.start_browser()
+                try:
+                    await login_agent.start_browser()
+                except Exception as browser_error:
+                    if "Host system is missing dependencies" in str(browser_error):
+                        automation_status['error'] = "Browser dependencies missing. The automation requires system dependencies that aren't available in this environment. Try running in headless mode or contact support for assistance."
+                    else:
+                        automation_status['error'] = f"Failed to start browser: {str(browser_error)}"
+                    return
                 
                 # Step 2: Login
                 automation_status['status'] = 'logging_in'
@@ -273,6 +288,93 @@ def run_automation(phone_number, command, headless):
         automation_status['error'] = str(e)
         automation_status['status'] = 'error'
         automation_status['message'] = f'Failed to run automation: {str(e)}'
+
+def run_demo_automation(phone_number, command):
+    """Run a demo automation workflow that simulates the real process"""
+    global automation_status
+    import time
+    
+    try:
+        # Demo data for simulation
+        demo_orders = [
+            {
+                'order_id': 'AJIO123456789',
+                'product_name': 'Cotton Blue Casual Shirt',
+                'price': '₹1,299',
+                'delivery_status': 'Delivered',
+                'has_return_option': True,
+                'return_deadline': '2025-07-22'
+            },
+            {
+                'order_id': 'AJIO987654321',
+                'product_name': 'Black Formal Shoes',
+                'price': '₹2,499',
+                'delivery_status': 'Shipped',
+                'has_return_option': False,
+                'return_deadline': None
+            },
+            {
+                'order_id': 'AJIO456789123',
+                'product_name': 'Red Summer Dress',
+                'price': '₹1,899',
+                'delivery_status': 'Delivered',
+                'has_return_option': True,
+                'return_deadline': '2025-07-20'
+            }
+        ]
+        
+        # Initialize database
+        automation_status['status'] = 'initializing'
+        automation_status['message'] = 'Setting up database...'
+        time.sleep(1)
+        init_database()
+        
+        # Simulate browser starting
+        automation_status['status'] = 'browser_starting'
+        automation_status['message'] = 'Opening browser (Demo Mode)...'
+        time.sleep(2)
+        
+        # Simulate login process
+        automation_status['status'] = 'logging_in'
+        automation_status['message'] = f'Logging in with phone {phone_number}...'
+        time.sleep(3)
+        
+        # Simulate OTP entry
+        automation_status['message'] = 'Simulating OTP verification...'
+        time.sleep(2)
+        
+        # Simulate order scraping
+        automation_status['status'] = 'scraping_orders'
+        automation_status['message'] = 'Extracting order information...'
+        time.sleep(2)
+        
+        automation_status['orders'] = demo_orders
+        
+        # Save demo orders to database
+        automation_status['message'] = f'Saving {len(demo_orders)} orders to database...'
+        reminder_agent = ReminderAgent()
+        for order in demo_orders:
+            reminder_agent.save_order(order)
+        time.sleep(1)
+        
+        # Handle command if provided
+        if command and command.strip():
+            automation_status['status'] = 'processing_command'
+            automation_status['message'] = f'Processing command: {command} (Demo Mode)'
+            time.sleep(2)
+            automation_status['message'] = f'Command "{command}" processed successfully (simulated)'
+        
+        # Complete
+        automation_status['status'] = 'completed'
+        automation_status['message'] = f'Demo automation completed! Found {len(demo_orders)} orders. (This was a simulation - no real browser interaction occurred)'
+        
+    except Exception as e:
+        automation_status['error'] = str(e)
+        automation_status['status'] = 'error'
+        automation_status['message'] = f'Demo failed: {str(e)}'
+    
+    finally:
+        automation_status['running'] = False
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

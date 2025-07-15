@@ -2,7 +2,7 @@ modules = ["python-3.11", "python3"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["gitFull", "playwright-driver"]
+packages = ["gitFull", "playwright-driver", "nss", "nspr", "dbus", "atk", "cups", "libxkbcommon", "mesa", "cairo", "pango", "alsa-lib"]
 
 [workflows]
 runButton = "Project"
