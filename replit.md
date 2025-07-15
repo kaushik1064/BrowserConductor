@@ -79,10 +79,18 @@ The system implements a specialized agent pattern where each agent has a specifi
 
 ## Deployment Strategy
 
-### Local Development
+### Replit Environment (Web Interface Only)
+- Flask web application with dashboard for system monitoring
+- PostgreSQL database integration
+- API endpoints for status, orders, and reminders
+- Limited browser automation due to system dependency constraints
+
+### Local Development (Full Browser Automation)
 - Environment setup via pip/conda with requirements.txt
 - SQLite database auto-initialization on first run
 - Configurable headless/headful browser modes for development and production
+- Full Playwright browser automation with system dependencies
+- Complete CLI interface with typer commands
 
 ### Configuration Management
 - Environment variables for sensitive data (API keys)
