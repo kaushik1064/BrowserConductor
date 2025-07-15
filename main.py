@@ -91,12 +91,14 @@ def login_and_scrape(
 @app.command()
 def check_reminders():
     """Check for return deadline reminders"""
+    init_database()
     reminder_agent = ReminderAgent()
     reminder_agent.check_reminders()
 
 @app.command()
 def list_orders():
     """List all saved orders from database"""
+    init_database()
     reminder_agent = ReminderAgent()
     orders = reminder_agent.get_all_orders()
     

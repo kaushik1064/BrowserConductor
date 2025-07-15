@@ -1,4 +1,4 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "python3"]
 
 [nix]
 channel = "stable-24_05"
@@ -14,24 +14,29 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Ajio Automation Server"
+args = "Ajio Automation"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "install_dependencies"
+args = "Ajio Web Interface"
 
 [[workflows.workflow]]
-name = "Ajio Automation Server"
+name = "Ajio Automation"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uv add playwright typer crawl4ai aiohttp beautifulsoup4 groq && uv run playwright install chromium && uv run python main.py --help"
+args = "uv run playwright install chromium && uv run python main.py --help"
 
 [[workflows.workflow]]
-name = "install_dependencies"
+name = "Ajio Web Interface"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uv add playwright typer asyncio beautifulsoup4 aiohttp pytest"
+args = "uv run python web_interface.py"
+waitForPort = 5000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
