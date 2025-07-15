@@ -240,18 +240,55 @@
                 </div>
                 
                 <div class="commands">
-                    <h3>Available Commands</h3>
-                    <p>Use these commands in the terminal to interact with the system:</p>
+                    <h3>Start Automation</h3>
+                    <p>Enter your details to start the automation process:</p>
                     
-                    <div class="command">python main.py login-and-scrape --phone YOUR_PHONE</div>
-                    <div class="command">python main.py check-reminders</div>
-                    <div class="command">python main.py list-orders</div>
-                    <div class="command">python main.py --help</div>
+                    <div style="margin: 20px 0;">
+                        <div style="margin-bottom: 15px;">
+                            <label for="phone" style="display: block; margin-bottom: 5px; font-weight: bold;">Phone Number:</label>
+                            <input type="tel" id="phone" placeholder="Enter your phone number (e.g., 9876543210)" 
+                                   style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label for="command" style="display: block; margin-bottom: 5px; font-weight: bold;">Command (Optional):</label>
+                            <input type="text" id="command" placeholder="e.g., return the blue shirt, replace order ABC123" 
+                                   style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;">
+                            <small style="color: #64748b;">Leave empty to just scrape orders</small>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="headless" style="margin-right: 8px;">
+                                <span>Run in background (headless mode)</span>
+                            </label>
+                            <small style="color: #64748b;">Uncheck to see the browser window</small>
+                        </div>
+                    </div>
                     
-                    <div style="margin-top: 15px;">
-                        <button class="btn" onclick="refreshData()">Refresh Status</button>
-                        <button class="btn" onclick="checkReminders()">Check Reminders</button>
-                        <button class="btn" onclick="viewOrders()">View Orders</button>
+                    <div style="margin: 20px 0;">
+                        <button class="btn" onclick="startAutomation()" id="startBtn">🚀 Start Automation</button>
+                        <button class="btn" onclick="stopAutomation()" id="stopBtn" style="background: #ef4444; display: none;">⏹️ Stop Automation</button>
+                    </div>
+                    
+                    <div id="automation-status" style="margin: 20px 0; padding: 15px; border-radius: 8px; display: none;">
+                        <div id="status-message" style="font-weight: bold; margin-bottom: 10px;"></div>
+                        <div id="progress-bar" style="background: #e2e8f0; border-radius: 10px; overflow: hidden; height: 8px;">
+                            <div id="progress-fill" style="background: linear-gradient(90deg, #4f46e5, #7c3aed); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div id="detailed-status" style="color: #64748b; margin-top: 10px; font-size: 0.9rem;"></div>
+                    </div>
+                    
+                    <div id="automation-results" style="margin: 20px 0; display: none;">
+                        <h4>Automation Results:</h4>
+                        <div id="results-content"></div>
+                    </div>
+                    
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                        <h4>Quick Actions:</h4>
+                        <button class="btn" onclick="refreshData()" style="background: #059669;">🔄 Refresh Status</button>
+                        <button class="btn" onclick="checkReminders()" style="background: #dc2626;">⏰ Check Reminders</button>
+                        <button class="btn" onclick="viewOrders()" style="background: #7c2d12;">📦 View Orders</button>
                     </div>
                 </div>
             </div>
@@ -390,10 +427,177 @@
             }
         }
         
+        async function startAutomation() {
+            const phoneNumber = document.getElementById('phone').value.trim();
+            const command = document.getElementById('command').value.trim();
+            const headless = document.getElementById('headless').checked;
+            
+            if (!phoneNumber) {
+                alert('Please enter your phone number');
+                return;
+            }
+            
+            if (!/^\d{10}$/.test(phoneNumber)) {
+                alert('Please enter a valid 10-digit phone number');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/automation/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone_number: phoneNumber,
+                        command: command,
+                        headless: headless
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show automation interface
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-block';
+                    document.getElementById('automation-status').style.display = 'block';
+                    
+                    // Start monitoring automation status
+                    startStatusMonitoring();
+                } else {
+                    alert('Failed to start automation: ' + data.error);
+                }
+                
+            } catch (error) {
+                alert('Error starting automation: ' + error.message);
+            }
+        }
+        
+        async function stopAutomation() {
+            try {
+                const response = await fetch('/api/automation/stop', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resetAutomationInterface();
+                    alert('Automation stopped');
+                } else {
+                    alert('Failed to stop automation');
+                }
+                
+            } catch (error) {
+                alert('Error stopping automation: ' + error.message);
+            }
+        }
+        
+        function startStatusMonitoring() {
+            const statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/automation/status');
+                    const status = await response.json();
+                    
+                    updateAutomationStatus(status);
+                    
+                    if (!status.running) {
+                        clearInterval(statusInterval);
+                        
+                        if (status.status === 'completed') {
+                            showAutomationResults(status);
+                        } else if (status.error) {
+                            alert('Automation failed: ' + status.error);
+                        }
+                        
+                        resetAutomationInterface();
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to get automation status:', error);
+                    clearInterval(statusInterval);
+                    resetAutomationInterface();
+                }
+            }, 2000); // Check every 2 seconds
+        }
+        
+        function updateAutomationStatus(status) {
+            const statusMessage = document.getElementById('status-message');
+            const detailedStatus = document.getElementById('detailed-status');
+            const progressFill = document.getElementById('progress-fill');
+            
+            statusMessage.textContent = status.message || 'Running...';
+            detailedStatus.textContent = `Status: ${status.status}`;
+            
+            // Update progress bar based on status
+            const progressMap = {
+                'starting': 10,
+                'initializing': 20,
+                'browser_starting': 30,
+                'logging_in': 50,
+                'scraping_orders': 70,
+                'processing_command': 85,
+                'completed': 100,
+                'error': 100
+            };
+            
+            const progress = progressMap[status.status] || 0;
+            progressFill.style.width = progress + '%';
+            
+            if (status.error) {
+                progressFill.style.background = '#ef4444';
+                statusMessage.style.color = '#dc2626';
+            } else if (status.status === 'completed') {
+                progressFill.style.background = '#10b981';
+                statusMessage.style.color = '#059669';
+            }
+        }
+        
+        function showAutomationResults(status) {
+            const resultsDiv = document.getElementById('automation-results');
+            const resultsContent = document.getElementById('results-content');
+            
+            let content = '<div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;">';
+            content += '<h5 style="color: #059669; margin-bottom: 10px;">✅ Automation Completed Successfully!</h5>';
+            
+            if (status.orders && status.orders.length > 0) {
+                content += `<p><strong>Orders Found:</strong> ${status.orders.length}</p>`;
+                content += '<ul style="margin: 10px 0; padding-left: 20px;">';
+                
+                status.orders.forEach(order => {
+                    content += `<li>${order.product_name || 'Unknown Product'} - ${order.price || 'Price not available'}</li>`;
+                });
+                
+                content += '</ul>';
+            } else {
+                content += '<p>No orders found in your account.</p>';
+            }
+            
+            content += '</div>';
+            
+            resultsContent.innerHTML = content;
+            resultsDiv.style.display = 'block';
+            
+            // Refresh the stats
+            loadStats();
+        }
+        
+        function resetAutomationInterface() {
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('automation-status').style.display = 'none';
+            
+            // Reset progress
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-fill').style.background = 'linear-gradient(90deg, #4f46e5, #7c3aed)';
+            document.getElementById('status-message').style.color = 'inherit';
+        }
+        
         // Load system status on page load
         window.addEventListener('load', loadSystemStatus);
         
-        // Auto-refresh every 30 seconds
+        // Auto-refresh stats every 30 seconds
         setInterval(loadStats, 30000);
     </script>
 </body>
