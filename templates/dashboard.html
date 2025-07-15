@@ -265,12 +265,19 @@
                             <small style="color: #64748b;">Uncheck to see the browser window</small>
                         </div>
                         
-                        <div style="margin-bottom: 15px; padding: 15px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px;">
+                        <div style="margin-bottom: 15px; padding: 15px; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px;">
+                            <div style="margin-bottom: 10px;">
+                                <strong style="color: #92400e;">⚠️ Important Notice:</strong>
+                            </div>
+                            <p style="color: #92400e; margin-bottom: 10px; font-size: 0.9rem;">
+                                Real browser automation requires system dependencies that aren't available in this Replit environment. 
+                                For actual Ajio.com login and order scraping, you would need to run this on a local machine.
+                            </p>
                             <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="checkbox" id="demo-mode" style="margin-right: 8px;">
-                                <span style="font-weight: bold; color: #0369a1;">Demo Mode (Recommended)</span>
+                                <input type="checkbox" id="demo-mode" checked style="margin-right: 8px;">
+                                <span style="font-weight: bold; color: #0369a1;">Demo Mode (Shows how real automation works)</span>
                             </label>
-                            <small style="color: #0369a1;">Run a simulation without real browser automation. Perfect for testing the interface and seeing sample orders.</small>
+                            <small style="color: #0369a1;">Simulates the complete workflow with sample data. Uncheck to attempt real browser automation (will likely fail).</small>
                         </div>
                     </div>
                     
@@ -297,6 +304,22 @@
                         <button class="btn" onclick="refreshData()" style="background: #059669;">🔄 Refresh Status</button>
                         <button class="btn" onclick="checkReminders()" style="background: #dc2626;">⏰ Check Reminders</button>
                         <button class="btn" onclick="viewOrders()" style="background: #7c2d12;">📦 View Orders</button>
+                    </div>
+                    
+                    <div style="margin-top: 25px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 style="color: #1e293b; margin-bottom: 15px;">🖥️ For Real Automation (Local Setup)</h4>
+                        <p style="color: #64748b; margin-bottom: 15px; font-size: 0.9rem;">
+                            To actually login to Ajio.com with your phone number and scrape your real orders, you need to run this on a local machine with browser support:
+                        </p>
+                        <div style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; margin: 10px 0; font-family: monospace; font-size: 0.8rem;">
+                            <div>1. Clone or download the project</div>
+                            <div>2. Install Python dependencies: pip install -r requirements.txt</div>
+                            <div>3. Install browser: playwright install chromium</div>
+                            <div>4. Run: python main.py login-and-scrape --phone YOUR_PHONE</div>
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px; font-size: 0.85rem;">
+                            <strong>Real workflow:</strong> Opens browser → Goes to Ajio.com → Enters your phone → You get SMS OTP → You enter OTP → Scrapes your actual orders → Saves to database
+                        </p>
                     </div>
                 </div>
             </div>

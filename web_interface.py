@@ -233,11 +233,12 @@ def run_automation(phone_number, command, headless):
                 automation_status['message'] = 'Opening browser...'
                 try:
                     await login_agent.start_browser()
+                    automation_status['message'] = 'Browser started successfully. Navigating to Ajio.com...'
                 except Exception as browser_error:
-                    if "Host system is missing dependencies" in str(browser_error):
-                        automation_status['error'] = "Browser dependencies missing. The automation requires system dependencies that aren't available in this environment. Try running in headless mode or contact support for assistance."
+                    if "Host system is missing dependencies" in str(browser_error) or "BrowserType.launch" in str(browser_error):
+                        automation_status['error'] = "REAL AUTOMATION NOT AVAILABLE: This Replit environment lacks the system dependencies needed for browser automation. To actually login to Ajio.com and scrape your real orders, you would need to run this on a local machine or server with proper browser support. The demo mode shows how it would work."
                     else:
-                        automation_status['error'] = f"Failed to start browser: {str(browser_error)}"
+                        automation_status['error'] = f"Browser startup failed: {str(browser_error)}"
                     return
                 
                 # Step 2: Login
