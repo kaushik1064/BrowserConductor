@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import typer
 
 from utils.database import get_db_connection
-from models.order import Order
+# from models.order import Order  # No longer needed as we're using Flask-SQLAlchemy
 
 class ReminderAgent:
     def __init__(self):
