@@ -8,6 +8,15 @@ This repository contains a Python-based multi-agent browser automation system de
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (July 15, 2025)
+
+✓ Implemented AI-powered login detection using Groq LLM
+✓ Created intelligent web page analysis system 
+✓ Added smart element interaction with fallback strategies
+✓ Enhanced stealth browser automation capabilities
+✓ Updated web interface to showcase AI features
+✓ Added comprehensive AI vision documentation
+
 ## System Architecture
 
 The system follows a multi-agent architecture pattern where specialized agents handle different aspects of the automation workflow:
@@ -31,6 +40,8 @@ The system implements a specialized agent pattern where each agent has a specifi
 
 ### 1. Multi-Agent System
 - **LoginAgent** (`agents/login_agent.py`): Manages browser initialization, popup dismissal, and Ajio.com authentication flow including OTP verification
+- **SmartLoginAgent** (`agents/smart_login_agent.py`): AI-powered login agent with stealth capabilities and intelligent element detection
+- **AIVisionAgent** (`agents/ai_vision_agent.py`): Uses Groq LLM for intelligent web page analysis and login element detection
 - **OrderAgent** (`agents/order_agent.py`): Navigates to orders page and extracts product details, prices, delivery status, and return information
 - **ReturnAgent** (`agents/return_agent.py`): Processes natural language commands to execute return/replace actions via browser automation
 - **ReminderAgent** (`agents/reminder_agent.py`): Tracks return deadlines and manages SQLite database operations
@@ -69,9 +80,10 @@ The system implements a specialized agent pattern where each agent has a specifi
 - **Typer**: Modern CLI framework for user interaction
 - **SQLite3**: Built-in Python database for local persistence
 
-### Optional Integrations
-- **Groq API**: Natural language processing for command interpretation (requires GROQ_API_KEY environment variable)
-- **aiohttp**: Async HTTP client for enhanced scraping capabilities
+### AI Integration
+- **Groq API**: Fast LLM for intelligent page analysis and element detection (requires GROQ_API_KEY environment variable)
+- **Natural Language Processing**: Command interpretation and page content understanding
+- **AI Vision**: Intelligent web element detection that adapts to website changes
 
 ### Browser Requirements
 - Chromium browser (automatically installed by Playwright)
