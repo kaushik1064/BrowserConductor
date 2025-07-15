@@ -255,30 +255,113 @@ class StealthLoginAgent:
         # Simulate looking around the page first
         await self._simulate_human_behavior()
         
-        login_selectors = Config.get_selector_list('login', 'login_button')
+        # Extended list of login selectors for Ajio.com
+        login_selectors = [
+            # Text-based selectors (most reliable)
+            'button:has-text("Sign In")',
+            'button:has-text("Login")',
+            'a:has-text("Sign In")',
+            'a:has-text("Login")',
+            'span:has-text("Sign In")',
+            'div:has-text("Sign In")',
+            
+            # Common class patterns
+            '[class*="login"]',
+            '[class*="signin"]',
+            '[class*="account"]',
+            '.header-login',
+            '.login-button',
+            '.signin-button',
+            
+            # Data attributes
+            '[data-testid*="login"]',
+            '[data-testid*="signin"]',
+            '[data-testid*="account"]',
+            
+            # Title attributes
+            'button[title*="login" i]',
+            'a[title*="login" i]',
+            'button[title*="sign" i]',
+            'a[title*="sign" i]',
+            
+            # Header area specific
+            'header button:has-text("Sign")',
+            'header a:has-text("Sign")',
+            '.header button:has-text("Sign")',
+            '.header a:has-text("Sign")',
+            
+            # Common ID patterns
+            '#login',
+            '#signin',
+            '#loginBtn',
+            '#signInBtn',
+            
+            # Ajio-specific patterns (if any)
+            '[data-cy*="login"]',
+            '[data-automation*="login"]',
+            
+            # Fallback patterns
+            'button[type="button"]:has-text("Sign")',
+            'a[href*="login"]',
+            'a[href*="signin"]'
+        ]
         
-        for selector in login_selectors:
+        typer.echo(f"🔍 Trying {len(login_selectors)} different login selectors...")
+        
+        for i, selector in enumerate(login_selectors):
             try:
+                typer.echo(f"🔍 Trying selector {i+1}: {selector}")
+                
                 # Wait and check if element exists
-                element = await self.page.wait_for_selector(selector, timeout=10000)
+                element = await self.page.wait_for_selector(selector, timeout=5000)
                 if element:
-                    # Scroll element into view
-                    await element.scroll_into_view_if_needed()
+                    # Check if element is visible and clickable
+                    is_visible = await element.is_visible()
+                    is_enabled = await element.is_enabled()
                     
-                    # Random delay before clicking
-                    await asyncio.sleep(random.uniform(0.5, 2))
-                    
-                    # Human-like click
-                    await element.click(delay=random.randint(100, 300))
-                    
-                    typer.echo("✅ Login button clicked")
-                    return True
-                    
+                    if is_visible and is_enabled:
+                        # Get element text for confirmation
+                        text_content = await element.text_content()
+                        typer.echo(f"✅ Found clickable login element: '{text_content}' with selector: {selector}")
+                        
+                        # Scroll element into view
+                        await element.scroll_into_view_if_needed()
+                        
+                        # Random delay before clicking
+                        await asyncio.sleep(random.uniform(0.5, 2))
+                        
+                        # Human-like click
+                        await element.click(delay=random.randint(100, 300))
+                        
+                        typer.echo("✅ Login button clicked successfully")
+                        return True
+                    else:
+                        typer.echo(f"⚠️ Element found but not clickable (visible: {is_visible}, enabled: {is_enabled})")
+                        
             except Exception as e:
-                typer.echo(f"❌ Could not click selector {selector}: {str(e)}")
+                typer.echo(f"❌ Selector failed: {selector} - {str(e)}")
                 continue
         
-        typer.echo("❌ Could not find login button")
+        # If no selectors worked, try to find any clickable element with login-related text
+        typer.echo("🔍 Trying generic approach - searching all clickable elements...")
+        try:
+            all_clickable = await self.page.query_selector_all('a, button, [onclick], [role="button"]')
+            for element in all_clickable:
+                text_content = await element.text_content()
+                if text_content and any(keyword in text_content.lower() for keyword in ['sign in', 'login', 'account']):
+                    is_visible = await element.is_visible()
+                    if is_visible:
+                        typer.echo(f"🎯 Found potential login element: '{text_content.strip()}'")
+                        await element.scroll_into_view_if_needed()
+                        await asyncio.sleep(random.uniform(0.5, 1))
+                        await element.click(delay=random.randint(100, 300))
+                        typer.echo("✅ Clicked potential login element")
+                        return True
+        except Exception as e:
+            typer.echo(f"❌ Generic approach failed: {str(e)}")
+        
+        typer.echo("❌ Could not find any login button")
+        typer.echo("💡 You may need to manually inspect the page and update the selectors")
         return False
     
     async def enter_phone_number(self, phone_number: Optional[str] = None):
