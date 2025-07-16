@@ -14,3 +14,8 @@ gunicorn>=23.0.0
 trafilatura>=2.0.0
 pytest>=8.4.1
 pytest-asyncio>=1.0.0
+email_validator
+flask
+flask-sqlalchemy
+gunicorn
+psycopg2-binary
